@@ -21,3 +21,6 @@ public endpoints
       
       response: {'data' : <data>}
   ```
+
+## Flow
+!(/images/FlowChart.png)
