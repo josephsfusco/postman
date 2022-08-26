@@ -1,30 +1,35 @@
 import time
+import json
+from requests import Response
 
-# {'email' : 'encrypted password'}
+# Psudo In-Memory User Database 
+# {'email': encrpted password}
 Users = {
-    "jsf.fusco@gmail.com" : 212, #PW: 1234
-    "hello@gmail.com" : 345
+    'jsf.fusco@gmail.com' : 212, #PW: 1234
+    'hello@gmail.com' : 345
 }
 
 Tokens = []
 
 # look up user name, hash password to see if given hash matches stored hash
 # if match, generate token
-def getAuthenticateUserService(body):
+def getBasicAuthenticationService(body):
     username = body['username']
     password_hash = getPasswordHash(body['password'])
-    #logging.debug(f'PASSWORD: {password_hash}')
+    #print(f'PASSWORD: {password_hash}')
 
     if username in Users:
         if Users[username] == password_hash:
             return generateToken()
 
-    return denied()
+    return unauthorized()
 
-# Returns True if token is valid and not stale
-#
-# {bool}
-def getAuthenticateTokenService(body):
+
+def getTokenAuthenticationService(body):
+    """Returns True if token is valid and not stale
+    return: {bool}
+    """
+
     print(body)
     token = body['token']
 
@@ -40,21 +45,22 @@ def getAuthenticateTokenService(body):
             return True
     return False
 
-# Returns "Credentials Denied"
+# TODO this should return 401 Unathorized"
 #
 # {string}
-def denied():
-    return "Credentials Denied"
+def unauthorized():
+
+    return "Unauthorized"
 
 # Returns new token after generation and storing in memeory
 #
 # token {string}
 def generateToken():
-    # I realize the double casting is sub optomal, I explored alternate ways of accomplishing this.
+    """I realize the double casting is sub optomal, I explored alternate ways of accomplishing this.
     # in order to maintain contenuity with authenticateToken() I made a design decision to go with this approcach.
     # Happy to discuss more in the code review
-
-    # using int() to remove deicmals
+    """
+    """using int() to remove deicmals"""
     newToken = int(time.time())
 
     # casting to string to return to the user
@@ -69,10 +75,11 @@ def getPasswordHash(password):
     hash = 0
     for c in password:
         hash+=ord(c)
+    print(hash)
     return hash+10
 
 def cleanUp():
-    #print("CLEAN UP!")
+
     #get system current moment and remove decimals
     systemCurrentMoment = int(time.time()) 
 
@@ -82,11 +89,3 @@ def cleanUp():
             Tokens.remove(t)
         break
     
-
-#def printit():
-#  
-# 
-#  threading.Timer(5.0, printit).start()
-#   print 
-
-# printit()

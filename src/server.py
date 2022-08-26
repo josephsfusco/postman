@@ -1,53 +1,56 @@
 from flask import Flask, request
 import threading
 import time
-import service
-import security
+import data_service as data
+import authentication_service as auth
 
 
 app = Flask(__name__)
 
 #########################################
-#                                       #
 #             AUTH SERVICE              #
-#                                       #
 #########################################
 
-# Returns a bearer token for users who provide valid username and password
-#
-# body: username (email) {string}
-# body: password {string}
-# returns: bearer token {string}
-@app.get("/authenticateBasic")
-def getAuthenticateBasicController():
+@app.get("/basicAuthentication")
+def getBasicAuthenticationController():
+    """ Returns a bearer token for users who provide valid username and password
+    body:
+        username (email) {string}
+        password {string}
+    returns: 
+        bearer token {string}
+    """
     body = dict(request.form)
 
-    return {'token' : security.getAuthenticateUserService(body)}
+    return {'token' : auth.getBasicAuthenticationService(body)}
 
-# Returns True if bearer token is authenticated, False if not
-@app.get("/authenticateToken")
-def getAuthenticateTokenController():
+@app.get("/tokenAuthentication")
+def getTokenAuthenticationController():
+    """ Returns True if bearer token is authenticated, False if not """
+
     body = dict(request.form)
 
-    return {'authenticated' : security.getAuthenticateTokenService(body)}
+    return {'authenticated' : auth.getTokenAuthenticationService(body)}
 
 
 
 #########################################
-#                                       #
 #         CORE BUSINESS SERVICE         #
-#                                       #
 #########################################
 
-# Returns data for users providing valid Bearer token
-# 
-# headers: Token {string}
-# returns: data {dict} (json)
 @app.get("/data")
-def getDataController():
+async def getDataController():
+    """Returns data for users providing valid Bearer token
+
+    headers: 
+        Token {string}
+    returns: 
+        data {dict} (json)
+    """
+
     headers = dict(request.headers)
     
-    return {'data' : service.getDataService(headers)}
+    return {'data' : data.getDataService(headers)}
 
 
 
@@ -62,7 +65,7 @@ def getHelloWorld():
 
 @app.get("/allTokens")
 def getAllTokensController():
-    return security.Tokens
+    return auth.Tokens
 
 
 
@@ -73,7 +76,7 @@ def getAllTokensController():
 
 def cleanupThread():
     while True:
-        security.cleanUp()
+        auth.cleanUp()
         time.sleep(10)
 
 if __name__ == "__main__":
