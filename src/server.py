@@ -18,15 +18,15 @@ app = Flask(__name__)
 # body: username (email) {string}
 # body: password {string}
 # returns: bearer token {string}
-@app.get("/authenticate")
-def getAuthenticateUserController():
+@app.get("/authenticateBasic")
+def getAuthenticateBasicController():
     body = dict(request.form)
 
     return {'token' : security.getAuthenticateUserService(body)}
 
 # Returns True if bearer token is authenticated, False if not
 @app.get("/authenticateToken")
-def getAuthenticatetokenController():
+def getAuthenticateTokenController():
     body = dict(request.form)
 
     return {'authenticated' : security.getAuthenticateTokenService(body)}
