@@ -5,87 +5,105 @@ from requests import Response
 # Psudo In-Memory User Database 
 # {'email': encrpted password}
 Users = {
-    'jsf.fusco@gmail.com' : 212, #PW: 1234
-    'hello@gmail.com' : 345
+    'jsf.fusco@gmail.com' : 780, #PW: postman
+    'hello@gmail.com' : 1094 #helloworld
 }
 
 Tokens = []
 
-# look up user name, hash password to see if given hash matches stored hash
-# if match, generate token
 def getBasicAuthenticationService(body):
+    """ Returns new token if username and password are known 
+    Body: {dict}
+        username {string}
+        password {string}
+    Returns: 
+        Response {Response}
+    """
+
     username = body['username']
     password_hash = getPasswordHash(body['password'])
-    #print(f'PASSWORD: {password_hash}')
 
     if username in Users:
         if Users[username] == password_hash:
-            return generateToken()
+            return {'token' : generateToken()}
 
-    return unauthorized()
-
+    return {'error' : 'unauthorized'}, 401
 
 def getTokenAuthenticationService(body):
     """Returns True if token is valid and not stale
-    return: {bool}
+    Returns:
+        {bool}
     """
 
-    print(body)
     token = body['token']
 
     if token in Tokens:
         print("token Found")
-        
-        #get system current moment and remove decimals
-        systemCurrentMoment = int(time.time()) 
-
-        #tokens are valid for 60 seconds 
-        if (int(token)+600) >= int(systemCurrentMoment):
+        tokenTimeStamp = int(token.split("-")[1])
+        #tokens are valid for 30 seconds 
+        if tokenTimeStamp+30 >= getSystemCurrentMoment():
             print("token still fresh")
             return True
     return False
 
-# TODO this should return 401 Unathorized"
-#
-# {string}
-def unauthorized():
-
-    return "Unauthorized"
-
-# Returns new token after generation and storing in memeory
-#
-# token {string}
-def generateToken():
-    """I realize the double casting is sub optomal, I explored alternate ways of accomplishing this.
-    # in order to maintain contenuity with authenticateToken() I made a design decision to go with this approcach.
-    # Happy to discuss more in the code review
+def getSystemCurrentMoment():
+    """Returns the systme current moment with Second precision
+    Renturns: 
+        {int}
     """
-    """using int() to remove deicmals"""
-    newToken = int(time.time())
 
-    # casting to string to return to the user
-    newToken = str(newToken)
+    print('system Current Moment')
+
+    return int(time.time())
+
+def getPrefix():
+    """Returns a randomly generated token prefix
+    Returns:
+        {str}
+    """
+    return 'x'
+
+def generateToken():
+    """ Returns new token after generation and storing in memeory
+    Returns:
+       token {string}
+    """
+    currentMoment = getSystemCurrentMoment()
+    prefix = getPrefix()
+
+    newToken = prefix + '-' + str(currentMoment)
+
     Tokens.append(newToken)
     return newToken
 
-# Returns encyrpted password hash
-# 
-# hash {int}    
 def getPasswordHash(password):
+    """ Returns encyrpted password hash
+    Returns:
+        hash {int}
+    """
     hash = 0
     for c in password:
         hash+=ord(c)
     print(hash)
     return hash+10
 
-def cleanUp():
-
-    #get system current moment and remove decimals
-    systemCurrentMoment = int(time.time()) 
+def cleanUp(i):
+    """ Cleans stale keys
+    Returns:
+        None
+    """
+    j = 0
+    print(f'Cleaning - external:{i}  internal:{j}')
+    systemCurrentMoment = getSystemCurrentMoment() 
+    j+=1
 
     for t in Tokens:
-
-        if int(t)+10 < systemCurrentMoment:
+        tokenTimeStamp = int(t.split('-')[1])
+        if tokenTimeStamp+30 < systemCurrentMoment:
+            print(f'Removing: {t}')
             Tokens.remove(t)
         break
+
+
+
     

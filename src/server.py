@@ -14,21 +14,32 @@ app = Flask(__name__)
 @app.get("/basicAuthentication")
 def getBasicAuthenticationController():
     """ Returns a bearer token for users who provide valid username and password
-    body:
-        username (email) {string}
-        password {string}
-    returns: 
-        bearer token {string}
+    Args:
+        body {dict}
+            username (email) {string}
+            password {string}
+    Returns: 
+        Response {Response}
     """
     body = dict(request.form)
-
-    return {'token' : auth.getBasicAuthenticationService(body)}
+    if 'username' not in body or 'password' not in body:
+        return {'error' : 'Forbidden'}, 403
+    
+    return auth.getBasicAuthenticationService(body)
 
 @app.get("/tokenAuthentication")
 def getTokenAuthenticationController():
-    """ Returns True if bearer token is authenticated, False if not """
+    """ Returns True if bearer token is authenticated, False if not 
+    Args:
+        body {dict}
+            token {string}
+    Returns:
+        Response {Response}
+    """
 
     body = dict(request.form)
+    if 'token' not in body:
+        return {'error' : 'Missing Token'}, 400
 
     return {'authenticated' : auth.getTokenAuthenticationService(body)}
 
@@ -39,19 +50,19 @@ def getTokenAuthenticationController():
 #########################################
 
 @app.get("/data")
-async def getDataController():
+def getDataController():
     """Returns data for users providing valid Bearer token
-
-    headers: 
-        Token {string}
+    Args:
+        headers {dict}
+            Token {string}
     returns: 
-        data {dict} (json)
+        Response {Response}
     """
-
     headers = dict(request.headers)
-    
-    return {'data' : data.getDataService(headers)}
+    if 'Token' not in headers:
+        return {'error' : 'Forbidden'}, 403
 
+    return data.getDataService(headers)
 
 
 
@@ -65,8 +76,8 @@ def getHelloWorld():
 
 @app.get("/allTokens")
 def getAllTokensController():
-    return auth.Tokens
-
+    return {'count'  : len(auth.Tokens)
+           }
 
 
 
@@ -75,11 +86,20 @@ def getAllTokensController():
 #########################################
 
 def cleanupThread():
+    i = 0
     while True:
-        auth.cleanUp()
-        time.sleep(10)
+        auth.cleanUp(i)
+        time.sleep(5)
+        i+=1
 
 if __name__ == "__main__":
-    #cleaner = threading.Thread(target=cleanupThread)
-    #cleaner.start()
+    cleaner = threading.Thread(target=cleanupThread,name='myThread')
+    cleaner.start()
     app.run(debug=True) #, host="0.0.0.0", port=80)%debug=True) #, host="0.0.0.0", port=80)%
+
+#def printit():
+#  
+#  threading.Timer(5.0, printit).start()
+#  print 
+
+# printit()
