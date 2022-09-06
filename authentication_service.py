@@ -1,6 +1,9 @@
 import time
-import json
-from requests import Response
+import random
+import string
+
+
+
 
 # Psudo In-Memory User Database 
 # {'email': encrpted password}
@@ -40,6 +43,7 @@ def getTokenAuthenticationService(body):
     if token in Tokens:
         print("token Found")
         tokenTimeStamp = int(token.split("-")[1])
+
         #tokens are valid for 30 seconds 
         if tokenTimeStamp+30 >= getSystemCurrentMoment():
             print("token still fresh")
@@ -61,7 +65,7 @@ def getPrefix():
     Returns:
         {str}
     """
-    return 'x'
+    return ''.join(random.sample(string.ascii_lowercase,4))
 
 def generateToken():
     """ Returns new token after generation and storing in memeory
@@ -87,15 +91,12 @@ def getPasswordHash(password):
     print(hash)
     return hash+10
 
-def cleanUp(i):
+def cleanUp():
     """ Cleans stale keys
     Returns:
         None
     """
-    j = 0
-    print(f'Cleaning - external:{i}  internal:{j}')
     systemCurrentMoment = getSystemCurrentMoment() 
-    j+=1
 
     for t in Tokens:
         tokenTimeStamp = int(t.split('-')[1])

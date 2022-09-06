@@ -1,15 +1,15 @@
 from flask import Flask, request
-import threading
-import time
 import data_service as data
 import authentication_service as auth
+import threading
+import time
 
 
 app = Flask(__name__)
 
-#########################################
-#             AUTH SERVICE              #
-#########################################
+#-----------------------------------------------
+#       Authenticaton Service            
+#-----------------------------------------------
 
 @app.get("/basicAuthentication")
 def getBasicAuthenticationController():
@@ -45,9 +45,9 @@ def getTokenAuthenticationController():
 
 
 
-#########################################
-#         CORE BUSINESS SERVICE         #
-#########################################
+#-----------------------------------------------
+#       Core Business Service       
+#-----------------------------------------------
 
 @app.get("/data")
 def getDataController():
@@ -66,9 +66,9 @@ def getDataController():
 
 
 
-#########################################
-#               TESTING                 #
-#########################################
+#-----------------------------------------------
+#       Testing                
+#-----------------------------------------------
 
 @app.get('/helloWorld')
 def getHelloWorld():
@@ -76,26 +76,25 @@ def getHelloWorld():
 
 @app.get("/allTokens")
 def getAllTokensController():
-    return {'count'  : len(auth.Tokens)
+    return {'count'  : len(auth.Tokens),
+            'tokens' : auth.Tokens
            }
 
 
 
-#########################################
-#            APPLICATION                #
-#########################################
+#-----------------------------------------------
+#            APPLICATION                
+#-----------------------------------------------
 
 def cleanupThread():
-    i = 0
     while True:
-        auth.cleanUp(i)
+        auth.cleanUp()
         time.sleep(5)
-        i+=1
 
 if __name__ == "__main__":
     cleaner = threading.Thread(target=cleanupThread,name='myThread')
     cleaner.start()
-    app.run(debug=True) #, host="0.0.0.0", port=80)%debug=True) #, host="0.0.0.0", port=80)%
+    app.run(debug=False) #, host="0.0.0.0", port=80)%debug=True) #, host="0.0.0.0", port=80)%
 
 #def printit():
 #  

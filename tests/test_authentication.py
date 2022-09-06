@@ -2,12 +2,9 @@
 
 from unittest import mock
 import unittest
-
-import sys
   
-#sys.path.append("..")
-##import ..src.authentication_service as auth
-from src import authentication_service as auth
+#from postman import authentication_service as auth
+import postman.src.authentication_service
 
 class AuthTestCase(unittest.TestCase):
     # def test_get_basic_auth_service_passing (self):
