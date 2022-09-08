@@ -1,16 +1,21 @@
-# Basic Unit Testing
+#--------------------------------------------
+#       Basic Unit Testing
+#--------------------------------------------  
 
 import unittest
+import sys
+
+sys.path.append('.')
+sys.path.append('./src')
+from src import server
+
 
 class Testdata(unittest.TestCase):
     def test_basic_authentication_controller(self):
-        self.assertEqual(None, None)
+        expected = server.getBasicAuthenticationController()
+        result = None
+        self.assertEqual(result, expected)
 
-    def test_token_authentication_controller(self):
-        self.assertEqual(None, None)
-
-    def test_data_controller(self):
-        self.assertEqual(None,None)
-
+    
 if __name__ == '__main__':
     unittest.main()

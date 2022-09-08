@@ -1,0 +1,5 @@
+#!/bin/bash
+
+python3 tests/test_server.py
+python3 tests/test_authentication.py
+python3 tests/test_data.py

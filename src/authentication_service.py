@@ -2,23 +2,21 @@ import time
 import random
 import string
 
-
-
-
 # Psudo In-Memory User Database 
 # {'email': encrpted password}
 Users = {
-    'jsf.fusco@gmail.com' : 780, #PW: postman
-    'hello@gmail.com' : 1094 #helloworld
+    'jsf.fusco@gmail.com' : 780,    #PW: postman
+    'hello@gmail.com' : 1094        #PW: helloworld
 }
 
 Tokens = []
 
 def getBasicAuthenticationService(body):
     """ Returns new token if username and password are known 
-    Body: {dict}
-        username {string}
-        password {string}
+    Args:
+        body {dict}
+            username {string}
+            password {string}
     Returns: 
         Response {Response}
     """
@@ -34,6 +32,9 @@ def getBasicAuthenticationService(body):
 
 def getTokenAuthenticationService(body):
     """Returns True if token is valid and not stale
+    Args:
+        body {dict}
+            token {string}
     Returns:
         {bool}
     """
@@ -55,9 +56,6 @@ def getSystemCurrentMoment():
     Renturns: 
         {int}
     """
-
-    print('system Current Moment')
-
     return int(time.time())
 
 def getPrefix():
@@ -81,18 +79,19 @@ def generateToken():
     return newToken
 
 def getPasswordHash(password):
-    """ Returns encyrpted password hash
+    """Hashes and returnsuser provided password for verification
+    Args:
+        password {string}
     Returns:
         hash {int}
     """
     hash = 0
     for c in password:
         hash+=ord(c)
-    print(hash)
     return hash+10
 
 def cleanUp():
-    """ Cleans stale keys
+    """ Cleans stale tokens from cache
     Returns:
         None
     """

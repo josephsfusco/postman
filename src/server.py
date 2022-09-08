@@ -1,3 +1,7 @@
+#-----------------------------------------------
+#       Core App & Service Controllers            
+#-----------------------------------------------
+
 from flask import Flask, request
 import data_service as data
 import authentication_service as auth
@@ -92,13 +96,7 @@ def cleanupThread():
         time.sleep(5)
 
 if __name__ == "__main__":
-    cleaner = threading.Thread(target=cleanupThread,name='myThread')
+    cleaner = threading.Thread(target=cleanupThread)
     cleaner.start()
-    app.run(debug=False) #, host="0.0.0.0", port=80)%debug=True) #, host="0.0.0.0", port=80)%
+    app.run(debug=False) 
 
-#def printit():
-#  
-#  threading.Timer(5.0, printit).start()
-#  print 
-
-# printit()

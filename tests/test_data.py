@@ -1,17 +1,32 @@
-#Basic unit testing
+#--------------------------------------------
+#       Basic Unit Testing
+#--------------------------------------------
+
 import unittest
+import sys
+from mock import patch
+from unittest import mock
+
+sys.path.append('.')
+from src import data_service as data
+
 
 class Testdata(unittest.TestCase):
-    def test_data_service_passing(self):
-        self.assertEqual(None, None)
-    def test_data_service_failure(self):
-        self.assertEqual(None, None)
 
+    @mock.patch('src.data_service.authenticateToken', return_value=True)
+    def test_data_service_passing(self, authenticateToken):
+        result = data.getDataService({})['data']
+        expected = 'Hello, Postman!'
 
-    def test_authenticate_token(self):
-        #mockRequest here
-        self.assertEqual(None, None)
+        self.assertEqual(result, expected)
+    
+    @mock.patch('src.data_service.authenticateToken', return_value=False)
+    def test_data_service_failure(self, authenticateToken):
+        result = data.getDataService({})[0]['error']
+        expected = 'Unauthorized'
 
+        self.assertEqual(result, expected)
+    
 
 if __name__ == '__main__':
     unittest.main()

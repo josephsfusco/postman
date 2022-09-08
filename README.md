@@ -15,15 +15,14 @@ When Client requests data, Business Service makes a follow-up request to Auth Se
 
 # Getting Started
 This project is deployed on Heroku at the following domain {domain}
-to begin make a [GET] request to the following endpoint 
-`/basicAuthentication` using the below user name and password 
 
+1. Start by requesting a bearer token. Make a [`GET`] request to `/basicAuthentication` using the below user name and password. Find the request format documented below in the `Endpoints` section
+   
 > `username: jsf.fusco@gmail.com`
 >
 > `password: postman`
 
-
-
+2. Follow by requesting data. Make a [`GET`] request to `/data` include the bearer token generated in step (1) Find the request format documented below in the `Endpoints` section
 
 
 # Endpoints
@@ -31,8 +30,8 @@ to begin make a [GET] request to the following endpoint
 
   ``` 
   /basicAuthentication
-     Request body: { 'username' : <username>,
-                     'password' : <password>
+     Body: { 'username' : <username>,
+             'password' : <password>
      }
   
      Response: {'token' : <bearer token>}
@@ -40,17 +39,17 @@ to begin make a [GET] request to the following endpoint
   
   ```
   /data
-      headers: {'token' : <bearer token>}
+      Headers: {'token' : <bearer token>}
       
       Response: {'data' : <data>}
   ```
 
 ### **Internal**
 ```
-/TokenAuthentication
-    Request body: {'token' : <bearer token>}
+/tokenAuthentication
+    Body: {'token' : <bearer token>}
 
-    Response: {'authenticated' : <Bool>}
+    Response: {'authenticated' : <bool>}
 ```
 
 # Authentication
@@ -85,7 +84,8 @@ While I considered both options I decided to use the second approach as it seper
 
 # Testing
 ### **Unit Testing**
-Basic unit test coverage provdied. Would ensure 100% testing for production
+Basic unit test coverage provdied. For a given function we are ensuring positive and negative test cases exist. 
+> Note: We are not testing 100% for the purpose of this exercise but would ensure we have complete coverage for production level code.
 
 ### **System Testing**
 State diagram provided for testing 
@@ -96,14 +96,14 @@ State diagram provided for testing
 
 # TODO
 
-- [ ] fix cleanup job 
+- [X] fix cleanup job 
 
 - [X] optomise hashing  (?)
 
 - [X] return 401s from public servides
 
 - [X] check status codes on auth response 
-- [ ] finish function documentation
+- [X] finish function documentation
 - [ ] logging
-- [ ] unittesting   
+- [ ] unit testing   
 - [ ] finish overview documentation

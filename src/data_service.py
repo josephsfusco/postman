@@ -4,6 +4,7 @@ import requests
 
 def getDataService(headers):
     """ Mock service which returns data to the user if authenticated
+    In practice this would enter a business logic flow which could return any data for an authorized user
     Args:
         headers {dict}
     Returns:
@@ -17,11 +18,12 @@ def getDataService(headers):
     return {'error' : 'Unauthorized'}, 401
 
 def authenticateToken(headers):
-    """ Requests authentication status of token from 
+    """ Requests authentication status of token from Authentication service
+    Returns true if token is valid 
     Args:
         headers {dict}
-            Host
-            Token 
+            Host {string}
+            Token {string}
     Returns:
         isAuthenticated {bool} 
     """

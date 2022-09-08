@@ -1,19 +1,25 @@
-# Basic Unit Testing
+#--------------------------------------------
+#       Basic Unit Testing
+#--------------------------------------------
 
-from unittest import mock
 import unittest
-  
-#from postman import authentication_service as auth
-import postman.src.authentication_service
+import sys
+ 
+sys.path.append('.')
+from src import authentication_service as auth
+
 
 class AuthTestCase(unittest.TestCase):
-    # def test_get_basic_auth_service_passing (self):
-    #     body = {'username' : 'jsf.fusco@gmail.com',
-    #             'password' : '1234'
-    #     }
-
-    #     expected = {'token' : 98765456}
-    #     self.assertAlmostEqual(auth.getBasicAuthenticationService(body), expected)
+    def test_get_basic_auth_service_passing (self):
+        body = {'username' : 'jsf.fusco@gmail.com',
+                'password' : 'postman'
+        }
+                        
+        expected = 'abcd-0123456789'
+        result = auth.getBasicAuthenticationService(body)['token']
+        self.assertEqual(len(result), len(expected))
+        self.assertEqual(result.index('-'), expected.index('-'))
+    
     def test_get_basic_auth_service_failure (self):
         body = {'username' : 'jsf.fusco@gmail.com',
                 'password' : '123'
@@ -21,7 +27,6 @@ class AuthTestCase(unittest.TestCase):
         expected = {'error' : 'unauthorized'}, 401
         self.assertEqual(auth.getBasicAuthenticationService(body), expected)    
     
-
 
     def test_get_token_authentication_service_passing(self):
         #need to use an authentic key here
