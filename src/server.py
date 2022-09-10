@@ -1,10 +1,9 @@
 #-----------------------------------------------
 #       Core App & Service Controllers            
 #-----------------------------------------------
-
 from flask import Flask, request
-import data_service as data
-import authentication_service as auth
+import data_service
+import authentication_service
 import threading
 import time
 
@@ -12,11 +11,11 @@ import time
 app = Flask(__name__)
 
 #-----------------------------------------------
-#       Authenticaton Service            
+#       Authenticaton Controller            
 #-----------------------------------------------
 
-@app.get("/basicAuthentication")
-def getBasicAuthenticationController():
+@app.post("/login") 
+def getBearerToken():
     """ Returns a bearer token for users who provide valid username and password
     Args:
         body {dict}
@@ -27,12 +26,12 @@ def getBasicAuthenticationController():
     """
     body = dict(request.form)
     if 'username' not in body or 'password' not in body:
-        return {'error' : 'Forbidden'}, 403
+        return {'error' : 'Forbidden'}, 403 #400 bad request? look into this 
     
-    return auth.getBasicAuthenticationService(body)
+    return authentication_service.getBearerToken(body) 
 
-@app.get("/tokenAuthentication")
-def getTokenAuthenticationController():
+@app.get("/validateToken")
+def isTokenValid(): 
     """ Returns True if bearer token is authenticated, False if not 
     Args:
         body {dict}
@@ -42,19 +41,20 @@ def getTokenAuthenticationController():
     """
 
     body = dict(request.form)
+    print(body)
     if 'token' not in body:
         return {'error' : 'Missing Token'}, 400
 
-    return {'authenticated' : auth.getTokenAuthenticationService(body)}
+    return {'authenticated' : authentication_service.isTokenValid(body)} 
 
 
 
 #-----------------------------------------------
-#       Core Business Service       
+#       Core Business Controller       
 #-----------------------------------------------
 
 @app.get("/data")
-def getDataController():
+def getData(): 
     """Returns data for users providing valid Bearer token
     Args:
         headers {dict}
@@ -66,7 +66,7 @@ def getDataController():
     if 'Token' not in headers:
         return {'error' : 'Forbidden'}, 403
 
-    return data.getDataService(headers)
+    return data_service.getData(headers)
 
 
 
@@ -79,9 +79,9 @@ def getHelloWorld():
     return "Hello World!"
 
 @app.get("/allTokens")
-def getAllTokensController():
-    return {'count'  : len(auth.Tokens),
-            'tokens' : auth.Tokens
+def getAllTokens():
+    return {'count'  : len(authentication_service.BearerTokens),
+            'tokens' : authentication_service.BearerTokens
            }
 
 
@@ -92,11 +92,11 @@ def getAllTokensController():
 
 def cleanupThread():
     while True:
-        auth.cleanUp()
+        authentication_service.cleanStaleTokens()
         time.sleep(5)
 
 if __name__ == "__main__":
-    cleaner = threading.Thread(target=cleanupThread)
-    cleaner.start()
+    reaper = threading.Thread(target=cleanupThread)
+    reaper.start()
     app.run(debug=False) 
 

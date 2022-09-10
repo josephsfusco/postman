@@ -32,7 +32,7 @@ This project is deployed on Heroku at the following domain {domain}
 
 **Using the App**
 
-1. Start by requesting a bearer token. Make a [`GET`] request to `/basicAuthentication` using the below user name and password. Find the request format documented below in the `Endpoints` section
+1. Start by requesting a bearer token. Make a [`POST`] request to `/login` using the below user name and password. Find the request format documented below in the `Endpoints` section
    
 > `username: jsf.fusco@gmail.com`
 >
@@ -45,7 +45,7 @@ This project is deployed on Heroku at the following domain {domain}
 ### **Public**
 
   ``` 
-  /basicAuthentication
+  /login
      Body: { 'username' : <username>,
              'password' : <password>
      }
@@ -62,7 +62,7 @@ This project is deployed on Heroku at the following domain {domain}
 
 ### **Internal**
 ```
-/tokenAuthentication
+/validateToken
     Body: {'token' : <bearer token>}
 
     Response: {'authenticated' : <bool>}
@@ -78,11 +78,11 @@ A token is generated upon providing sucessful proof of basic auth which is then 
 > **Notes to reviewers:** This is a *very* primitive way of hashing for encrptyon and generating a time stamped token. This level of simplysity is only used because this is a proof of concept. 
 
 # Memory Management
-A new token is created each time a user requests one using `/basicAuthentication` as the token is stored in memeory this being left unmanaged will cause memory bloat. It is therefore impatative that we have a medium of removing stale tokens from memory. 
+A new token is created each time a user requests one using `/login` as the token is stored in memeory this being left unmanaged will cause memory bloat. It is therefore impatative that we have a medium of removing stale tokens from memory. 
 
 I considered two different approaches to doing this. 
 
-First, `/basicAuthentication` is the sole culprate of creating and caching new tokens it is therefore obvious to leverage this endpoint as a mechanism to trigger cleanup
+First, `/login` is the sole culprate of creating and caching new tokens it is therefore obvious to leverage this endpoint as a mechanism to trigger cleanup
 
 Second, `Background Cleanup` create a scheduled job which runs in background to clean up all stale tokens. 
 

@@ -9,9 +9,17 @@ Users = {
     'hello@gmail.com' : 1094        #PW: helloworld
 }
 
-Tokens = []
+class BearerToken: 
+    def __init__(self) -> None:
+        self.key = generateKey()
+        self.ttl = getSystemCurrentMoment()+30
+        self.refreshCount = 0
 
-def getBasicAuthenticationService(body):
+# {'key': Token}
+BearerTokens = {}
+#LRU least recently used 
+
+def getBearerToken(body):
     """ Returns new token if username and password are known 
     Args:
         body {dict}
@@ -30,7 +38,7 @@ def getBasicAuthenticationService(body):
 
     return {'error' : 'unauthorized'}, 401
 
-def getTokenAuthenticationService(body):
+def isTokenValid(body): 
     """Returns True if token is valid and not stale
     Args:
         body {dict}
@@ -39,14 +47,14 @@ def getTokenAuthenticationService(body):
         {bool}
     """
 
-    token = body['token']
+    key = body['token']
 
-    if token in Tokens:
+    if key in BearerTokens:
         print("token Found")
-        tokenTimeStamp = int(token.split("-")[1])
-
+        
         #tokens are valid for 30 seconds 
-        if tokenTimeStamp+30 >= getSystemCurrentMoment():
+        if BearerTokens[key].ttl >= getSystemCurrentMoment():
+            reinfalteToken(key)
             print("token still fresh")
             return True
     return False
@@ -58,25 +66,28 @@ def getSystemCurrentMoment():
     """
     return int(time.time())
 
-def getPrefix():
-    """Returns a randomly generated token prefix
+def generateKeyChunk():
+    """Returns a randomly generated token chunk
     Returns:
         {str}
     """
-    return ''.join(random.sample(string.ascii_lowercase,4))
+    return ''.join(random.sample(string.ascii_letters,4))
+
+def generateKey():
+    #sample: asdf-asdf-asdf-asdf
+    return '-'.join([generateKeyChunk() for i in range(4)])
+    
 
 def generateToken():
-    """ Returns new token after generation and storing in memeory
+    """ Create a new Token Object and inserts it into the dictionary Tokens 
+    using the Token key as the key in the dictionary
     Returns:
        token {string}
     """
-    currentMoment = getSystemCurrentMoment()
-    prefix = getPrefix()
+    bearerToken = BearerToken()
 
-    newToken = prefix + '-' + str(currentMoment)
-
-    Tokens.append(newToken)
-    return newToken
+    BearerTokens[bearerToken.key] = bearerToken
+    return bearerToken.key
 
 def getPasswordHash(password):
     """Hashes and returnsuser provided password for verification
@@ -90,19 +101,47 @@ def getPasswordHash(password):
         hash+=ord(c)
     return hash+10
 
-def cleanUp():
+def reinfalteToken(key):
+    """
+    Reinflating token TTL, incrementing resetCount and moving it to the top of the list
+    Args:
+        token {str}
+    Returns:
+        None
+    """
+    token = BearerTokens.pop(key)
+    
+    token.ttl = getSystemCurrentMoment()+30
+    token.refreshCount+=1
+
+    BearerTokens[key] = token
+
+    
+
+
+#--------------------------------------------
+#       Reaper Function
+#--------------------------------------------
+
+def cleanStaleTokens():
     """ Cleans stale tokens from cache
     Returns:
         None
     """
     systemCurrentMoment = getSystemCurrentMoment() 
 
-    for t in Tokens:
-        tokenTimeStamp = int(t.split('-')[1])
-        if tokenTimeStamp+30 < systemCurrentMoment:
-            print(f'Removing: {t}')
-            Tokens.remove(t)
-        break
+    #print(f'bearer Tokens {BearerTokens}')
+    staleTokens = []
+    for t in BearerTokens.items():
+        key = t[1].key
+        ttl = t[1].ttl
+        print(f'TOKENS {key}, {ttl}')
+        if ttl < systemCurrentMoment:
+            staleTokens.append(key)
+            print(f'Removing: {key}')
+    for s in staleTokens:
+        BearerTokens.pop(s)
+        
 
 
 

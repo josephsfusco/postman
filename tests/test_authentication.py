@@ -6,48 +6,55 @@ import unittest
 import sys
  
 sys.path.append('.')
-from src import authentication_service as auth
+from src import authentication_service
 
 
 class AuthTestCase(unittest.TestCase):
-    def test_get_basic_auth_service_passing (self):
+    def test_getBearerToken_passing (self):
         body = {'username' : 'jsf.fusco@gmail.com',
                 'password' : 'postman'
         }
                         
         expected = 'abcd-0123456789'
-        result = auth.getBasicAuthenticationService(body)['token']
+        result = authentication_service.getBearerToken(body)['token']
         self.assertEqual(len(result), len(expected))
         self.assertEqual(result.index('-'), expected.index('-'))
     
-    def test_get_basic_auth_service_failure (self):
+    def test_getBearerToken_failure (self):
         body = {'username' : 'jsf.fusco@gmail.com',
                 'password' : '123'
         }
+
         expected = {'error' : 'unauthorized'}, 401
-        self.assertEqual(auth.getBasicAuthenticationService(body), expected)    
+        result = authentication_service.getBearerToken(body)
+        self.assertEqual(result, expected)    
     
 
-    def test_get_token_authentication_service_passing(self):
+    def test_isTokenValid_passing(self):
         #need to use an authentic key here
-        token = auth.generateToken()
-        auth.Tokens.append(token)
+        token = authentication_service.generateToken()
+        authentication_service.Tokens.append(token)
         body = {'token' : token}
+
+        result = authentication_service.isTokenValid(body)
         expected = True
-        self.assertEqual(auth.getTokenAuthenticationService(body), expected)
+        self.assertEqual(result, expected)
     
-    def test_get_token_authentication_service_failure(self):
-        auth.Tokens.append(3456)
+    def test_isTokenValid_failure(self):
+        authentication_service.Tokens.append(3456)
         body = {'token' : 6543}
+
+        result = authentication_service.isTokenValid(body)
         expected = False
-        self.assertEqual(auth.getTokenAuthenticationService(body), expected)
+        self.assertEqual(result, expected)
 
     
-    def test_get_password_hash(self):
+    def test_getPasswordHash(self):
         password = 'helloworld'
-        expected = 1094
 
-        self.assertEqual(auth.getPasswordHash(password), expected)
+        result = authentication_service.getPasswordHash(password)
+        expected = 1094
+        self.assertEqual(result, expected)
 
 
 if __name__ == '__main__':
