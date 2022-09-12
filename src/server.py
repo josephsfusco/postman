@@ -65,7 +65,7 @@ def isTokenValid():
 @app.get("/")
 def helloPostman():
     return 'Hello Postman, head over to https://github.com/josephsfusco/postman to get started! See you there!'
-    
+
 @app.get("/data")
 def getData(): 
     """Returns data for users providing valid Bearer token
@@ -96,7 +96,7 @@ def getHelloWorld():
 @app.get("/allTokens")
 def getAllTokens():
     return {'count'  : len(authentication_service.BearerTokens),
-            'tokens' : authentication_service.BearerTokens
+            'tokens' : list(authentication_service.BearerTokens.keys())
            }
 
 
