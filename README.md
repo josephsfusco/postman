@@ -80,7 +80,7 @@ $ ./startServer
 We use a simple in memeory data base which stores usernames and encrypted passwords. In order to maintain a basic level of security passwords are encrpyted using a very simple one way hash. When we, the server, rerecieve a login request we hash the value of the user provided password and verify it matches that of the hash in the database, crucially this means we never decrpt the known password. 
 
 ### **Bearer Token Authentication**
-First, What is a bearer token? A Bearer Token is a simple token which provides the bearer of the token access to anything secured by the token. These tokens often come in a few different flavors, reinflating, fixed ttl, and single use. In practice for client to server communication reinflating tokens are the most common which is what we've decdied to do here. By comparison fixed ttl are frequently used for server to server communication and single use are used for account creation verification. 
+First, What is a bearer token? A Bearer Token is a simple token which provides the bearer of the token access to anything secured by the token. These tokens often come in a few different flavors, reinflating, fixed Time to Live (TTL), and single use. In practice for client to server communication reinflating tokens are the most common which is what we've decdied to do here. By comparison fixed ttl are frequently used for server to server communication and single use are used for account creation verification. 
 
 Its important to note that bearer tokens are only secure over HTTPS and not HTTP as the packaged can be sniffed and the contents including the token can be compromised by an attacker. 
 
@@ -98,13 +98,7 @@ First, lets look at the source of the issue, `/login` is the sole culprate of cr
 
 Second, lets look at an option that doesnt impact the user experience, `Background Cleanup` supose create a backgrounc clean up job which runs at scheduled intervals to manage dead tokens. 
 
-While we can consider both options and at our current size we will perhaps see minimal difference with either solution, we may want to approach this problem with some foresight as to our our application may scale. As we grow managing tokens will turn into a larger data structure and performance problem, because of this we should decouple this from our....... It is for this reason that we pick the second approach. 
-
-As we scale further we will want to look into outside services that may help us. Services like Redis have tools to help solve these problems so modularizing our code so a new service can plug and play into our existing architecture is paramount. 
-
-As our application scales how  considered both options I decided to use the second approach as it seperates delegation of work and modularises the code base. This would make scaling the project much easier in the future. 
-
-Services like Redis have ways of handling
+While we can consider both options and at our current size we will perhaps see minimal difference with either solution, we may want to approach this problem with some foresight as to our our application may scale. As we grow managing tokens will turn into a larger issue and decoupling it from our login service may be adventagous. furthermore we should look even further down the line and consider what 3rd party services are available for us to leverage and design our archtecutre in a modular way where we can plug and play a new tool in. It is for this reason that we pick the second approach. See `Future Improvements, Scalability & System Design Considerations` for more on scaling.
 
 # Flow
 1) Client initiates by making call to Auth Server authenticating using the provided given username and password.
@@ -141,30 +135,9 @@ State diagram shows all testing flows
 
 # Future Improvements, Scalability & System Design Considerations
 ### Database and Memory Managment 
-First lets quickly look at the users 'database' this would obviously not be stored in memeory as it is now, in my opinion the obvious choice would be a relational database to store user information and we would expand users into a class that could contain other attributes such as ID, email, etc. 
+First lets quickly look at the users 'database', in my opinion the obvious choice would be a relational database here, as we are storing inherently relational data. We would expand our basic key value pair into a class that would contain store basic user information (eg: ID, email, etc) and relational references to other information we may want to track.
 
-Since we've primaryly focused on building an authentication service. we should explore what scalability looks like for it. while the size of each token is very small, perhaps 100bytes as we scale memory is not our primary concern however we may want to explore leveraging an outside service for some of the other built in tools it may contain. Redis is a great example of a service which we could leverage, two functions straight out of the box which would help our system are Redis's cleanup functionality and token reinflation. 
+Since we've primaryly focused on building an authentication service, lets explore its scalability. While the size of each token is very small, lets assume 100bytes, this means storing 1M tokens would result in ~100mb of data in memeory, any modern device could handle this. So if data isnt our scaling problem, what is? Accessing and maintaining the data would quickly become our issue with 1M tokens we need a highly available fast lookup service to manage our tokens. As we said before we want to modularize our application so this component can be scaled but what if we could use a service for this? **Redis** is a great example of a service which we could leverage here, with its high availability and in memory data structures, this is a great candidate of a product that meets our requirements and would help offload some of the work.
 
-There are services out there like Redis which would take some of work off of us to help out like handling reinfaltion and cleanup. 
+Now lets look at our throughput. Where are we deployed? currently were on heroku which handles 4500call/hr (75tpm) this is great if were trying to create a POC that will help get us off the ground but we'll soon outgrow this once we get a few dozen active users. To make our service highly available we'll need to use an elastic service like AWS ECS/EC2 which will be able to scale up to 100+tps. 
 
-
-### abstraction and 3rd party usability. 
-the seperation of services allows for 
-
-
-
-# TODO
-
-- [X] fix cleanup job 
-- [X] return 401s from public servides
-
-- [X] check status codes on auth response 
-- [X] finish function documentation
-- [X] logging
-- [X] unit testing   
-- [X] finish overview documentation
-- [x] finish getting started doc 
-- [ ] move all strings to constants  
-- [ ] finish cleanup 
-- [ ] fix URL http/https issue (might not be an issue) 
-- [ ] README future improvements and scalability
