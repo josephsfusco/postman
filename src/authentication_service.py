@@ -1,6 +1,16 @@
-import time
+from data_service import authenticateToken
+import log
 import random
 import string
+import time
+
+USERNAME = 'username'
+PASSWORD = 'password'
+
+HTTP_UNAUTHORIZED = 401
+
+DEFAULT_TIMEOUT = 30
+
 
 # Psudo In-Memory User Database 
 # {'email': encrpted password}
@@ -9,15 +19,17 @@ Users = {
     'hello@gmail.com' : 1094        #PW: helloworld
 }
 
+# {'key': Token}
+BearerTokens = {}
+#LRU 
+
 class BearerToken: 
     def __init__(self) -> None:
         self.key = generateKey()
-        self.ttl = getSystemCurrentMoment()+30
+        self.ttl = getSystemCurrentMoment() + DEFAULT_TIMEOUT #CONFIGUREABLE  #tokens are valid for 30 seconds 
         self.refreshCount = 0
-
-# {'key': Token}
-BearerTokens = {}
-#LRU least recently used 
+        self.originalIssueTime = 0
+ 
 
 def getBearerToken(body):
     """ Returns new token if username and password are known 
@@ -29,14 +41,14 @@ def getBearerToken(body):
         Response {Response}
     """
 
-    username = body['username']
-    password_hash = getPasswordHash(body['password'])
+    username = body[USERNAME]
+    password_hash = getPasswordHash(body[PASSWORD])
 
     if username in Users:
         if Users[username] == password_hash:
             return {'token' : generateToken()}
 
-    return {'error' : 'unauthorized'}, 401
+    return {'error' : 'unauthorized'}, HTTP_UNAUTHORIZED 
 
 def isTokenValid(body): 
     """Returns True if token is valid and not stale
@@ -50,12 +62,11 @@ def isTokenValid(body):
     key = body['token']
 
     if key in BearerTokens:
-        print("token Found")
+        log.debug('authentication_service.isTokenValid','Token found')
         
-        #tokens are valid for 30 seconds 
         if BearerTokens[key].ttl >= getSystemCurrentMoment():
-            reinfalteToken(key)
-            print("token still fresh")
+            reinfalteToken(key) #openclosed principal Slid solid 
+            log.debug('authentication_service.isTokenValid','token still fresh')
             return True
     return False
 
@@ -74,10 +85,14 @@ def generateKeyChunk():
     return ''.join(random.sample(string.ascii_letters,4))
 
 def generateKey():
-    #sample: asdf-asdf-asdf-asdf
+    """Returns a key
+    sample: asdf-asdf-asdf-asdf
+    Returns:
+        {str}
+    """
+    
     return '-'.join([generateKeyChunk() for i in range(4)])
     
-
 def generateToken():
     """ Create a new Token Object and inserts it into the dictionary Tokens 
     using the Token key as the key in the dictionary
@@ -109,12 +124,14 @@ def reinfalteToken(key):
     Returns:
         None
     """
-    token = BearerTokens.pop(key)
-    
-    token.ttl = getSystemCurrentMoment()+30
+    token = BearerTokens[key]
+    log.debug('authentication_service.reinflateToken - Original TTL:', token.ttl)
+    token.ttl = getSystemCurrentMoment() + DEFAULT_TIMEOUT
     token.refreshCount+=1
+    log.debug('authentication_service.reinflateToken - Reinflated TTL:', token.ttl)
+    
 
-    BearerTokens[key] = token
+    #BearerTokens[key] = token
 
     
 
@@ -123,23 +140,25 @@ def reinfalteToken(key):
 #       Reaper Function
 #--------------------------------------------
 
-def cleanStaleTokens():
+def cleanDeadTokens():
     """ Cleans stale tokens from cache
     Returns:
         None
     """
     systemCurrentMoment = getSystemCurrentMoment() 
 
-    #print(f'bearer Tokens {BearerTokens}')
-    staleTokens = []
+    log.debug('authentication_service.cleanStaleTokens - Count:', len(BearerTokens))
+    
+    deadTokens = []
     for t in BearerTokens.items():
-        key = t[1].key
-        ttl = t[1].ttl
-        print(f'TOKENS {key}, {ttl}')
+        key, ttl = t[1].key, t[1].ttl
+        log.debug('authentication_service.cleanStaleTokens', (key, ttl))
+        
         if ttl < systemCurrentMoment:
-            staleTokens.append(key)
-            print(f'Removing: {key}')
-    for s in staleTokens:
+            deadTokens.append(key)
+            log.debug('authentication_service.cleanStaleTokens - Removing Key', key)
+    
+    for s in deadTokens:
         BearerTokens.pop(s)
         
 

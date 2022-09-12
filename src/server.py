@@ -1,14 +1,19 @@
 #-----------------------------------------------
 #       Core App & Service Controllers            
 #-----------------------------------------------
+#from http.client import BAD_REQUEST
 from flask import Flask, request
-import data_service
 import authentication_service
+import data_service
+import log
 import threading
 import time
 
-
 app = Flask(__name__)
+
+HTTP_FORBIDDEN  = 403
+HTTP_BADREQUEST = 400
+
 
 #-----------------------------------------------
 #       Authenticaton Controller            
@@ -25,8 +30,11 @@ def getBearerToken():
         Response {Response}
     """
     body = dict(request.form)
+    url = request.url #TODO get url from request
+    log.debug('server.getBearerToken', body)
+
     if 'username' not in body or 'password' not in body:
-        return {'error' : 'Forbidden'}, 403 #400 bad request? look into this 
+        return {'error' : 'Forbidden'}, HTTP_FORBIDDEN  
     
     return authentication_service.getBearerToken(body) 
 
@@ -41,9 +49,10 @@ def isTokenValid():
     """
 
     body = dict(request.form)
-    print(body)
+    log.debug('server.isTokenValid', body)
+
     if 'token' not in body:
-        return {'error' : 'Missing Token'}, 400
+        return {'error' : 'Missing Token'}, HTTP_BADREQUEST
 
     return {'authenticated' : authentication_service.isTokenValid(body)} 
 
@@ -63,8 +72,10 @@ def getData():
         Response {Response}
     """
     headers = dict(request.headers)
+    log.debug('server.getData', headers)
+
     if 'Token' not in headers:
-        return {'error' : 'Forbidden'}, 403
+        return {'error' : 'Forbidden'}, HTTP_FORBIDDEN
 
     return data_service.getData(headers)
 
@@ -90,13 +101,13 @@ def getAllTokens():
 #            APPLICATION                
 #-----------------------------------------------
 
-def cleanupThread():
+def reaperThread():
     while True:
-        authentication_service.cleanStaleTokens()
-        time.sleep(5)
+        authentication_service.cleanDeadTokens()
+        time.sleep(15)
 
 if __name__ == "__main__":
-    reaper = threading.Thread(target=cleanupThread)
+    reaper = threading.Thread(target=reaperThread)
     reaper.start()
     app.run(debug=False) 
 
