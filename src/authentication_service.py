@@ -11,17 +11,23 @@ HTTP_UNAUTHORIZED = 401
 
 DEFAULT_TIMEOUT = 30
 
-
-# Psudo In-Memory User Database 
-# {'email': encrpted password}
+"""
+Psudo In-Memory User Database 
+Format: 
+    {'email': encrpted password}
+"""
 Users = {
     'jsf.fusco@gmail.com' : 780,    #PW: postman
     'hello@gmail.com' : 1094        #PW: helloworld
 }
 
-# {'key': Token}
+"""
+In memory token cache 
+Format: 
+    {'key': Token}
+"""
 BearerTokens = {}
-#LRU 
+
 
 class BearerToken: 
     def __init__(self) -> None:
@@ -29,7 +35,7 @@ class BearerToken:
         self.ttl = getSystemCurrentMoment() + DEFAULT_TIMEOUT #CONFIGUREABLE  #tokens are valid for 30 seconds 
         self.refreshCount = 0
         self.originalIssueTime = 0
- 
+
 
 def getBearerToken(body):
     """ Returns new token if username and password are known 
@@ -40,7 +46,6 @@ def getBearerToken(body):
     Returns: 
         Response {Response}
     """
-
     username = body[USERNAME]
     password_hash = getPasswordHash(body[PASSWORD])
 
@@ -58,14 +63,14 @@ def isTokenValid(body):
     Returns:
         {bool}
     """
-
     key = body['token']
+    log.debug('authentication_service.istokenValid', (key, list(BearerTokens.keys())))
 
     if key in BearerTokens:
         log.debug('authentication_service.isTokenValid','Token found')
         
         if BearerTokens[key].ttl >= getSystemCurrentMoment():
-            reinfalteToken(key) #openclosed principal Slid solid 
+            reinfalteToken(key)  
             log.debug('authentication_service.isTokenValid','token still fresh')
             return True
     return False
@@ -90,7 +95,6 @@ def generateKey():
     Returns:
         {str}
     """
-    
     return '-'.join([generateKeyChunk() for i in range(4)])
     
 def generateToken():
@@ -126,14 +130,13 @@ def reinfalteToken(key):
     """
     token = BearerTokens[key]
     log.debug('authentication_service.reinflateToken - Original TTL:', token.ttl)
+    
     token.ttl = getSystemCurrentMoment() + DEFAULT_TIMEOUT
     token.refreshCount+=1
     log.debug('authentication_service.reinflateToken - Reinflated TTL:', token.ttl)
     
 
-    #BearerTokens[key] = token
 
-    
 
 
 #--------------------------------------------
