@@ -62,6 +62,10 @@ def isTokenValid():
 #       Core Business Controller       
 #-----------------------------------------------
 
+@app.get("/")
+def helloPostman():
+    return 'Hello Postman, head over to https://github.com/josephsfusco/postman to get started! See you there!'
+    
 @app.get("/data")
 def getData(): 
     """Returns data for users providing valid Bearer token
