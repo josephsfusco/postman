@@ -19,9 +19,12 @@ To requests data Client must include the Bearer Token in the request headers, to
 # Getting Started
 **Running Remotely**
 
-This project is deployed on Heroku at the following domain {domain} 
+This project is deployed on Heroku at the following domain `https://postman-josephfusco.herokuapp.com/`
 
-> Note to reviewers: The server may be asleep and take a few moments to wake up for the first request. 
+> **Note to reviewers:** The server may be asleep and take a few moments to wake up for the first request. 
+
+
+> **Note to reviewers:** There is a small bug with heroku and you may have to make the request to `/data` 2-3 times, this does not exsit when running locally. 
 
 **Running Locally**
 
