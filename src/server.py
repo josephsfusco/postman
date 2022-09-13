@@ -17,7 +17,7 @@ HTTP_FORBIDDEN  = 403
 HTTP_BADREQUEST = 400
 
 
-MYID = str(uuid.uuid4())
+INSTANCE_ID = str(uuid.uuid4())
 
 #-----------------------------------------------
 #       Authenticaton Controller            
@@ -101,7 +101,7 @@ def getHelloWorld():
 def getAllTokens():
     return {'count'  : len(authentication_service.BearerTokens),
             'tokens' : list(authentication_service.BearerTokens.keys()),
-            'id' : MYID
+            'serverInstace' : INSTANCE_ID
            }
 
 

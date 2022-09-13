@@ -21,10 +21,13 @@ To requests data Client must include the Bearer Token in the request headers, to
 
 This project is deployed on Heroku at the following domain `https://postman-josephfusco.herokuapp.com/`
 
+> **Note to reviewers:** **Free Tier Heroku deploys one or more instances of the application.** When creating a token we cannot definitivly direct which instance its being stored to. likewise when validating a token we cannot guarentee which instance we are validating against. **You may have to hit `/data` 2-3 times to hit the correct instance** 
+> Solutions: 
+> - Use a paid version of Heroku to ensure a single instace of the app
+> - Use a data store like Redis so that regardless of what instance of the app is being hit they're all querying the same data store. 
+
 > **Note to reviewers:** The server may be asleep and take a few moments to wake up for the first request. 
-
-
-> **Note to reviewers:** You may have to hit `/data` 2-3 times due to an unresolved caching error with heroku.  
+ 
 
 **Running Locally**
 
