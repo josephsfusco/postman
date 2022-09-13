@@ -9,11 +9,15 @@ import log
 import threading
 import time
 
+import uuid
+
 app = Flask(__name__)
 
 HTTP_FORBIDDEN  = 403
 HTTP_BADREQUEST = 400
 
+
+MYID = str(uuid.uuid4())
 
 #-----------------------------------------------
 #       Authenticaton Controller            
@@ -32,7 +36,7 @@ def getBearerToken():
     body = dict(request.form)
     url = request.url #TODO get url from request
     log.debug('server.getBearerToken', body)
-
+    
     if 'username' not in body or 'password' not in body:
         return {'error' : 'Forbidden'}, HTTP_FORBIDDEN  
     
@@ -96,7 +100,8 @@ def getHelloWorld():
 @app.get("/allTokens")
 def getAllTokens():
     return {'count'  : len(authentication_service.BearerTokens),
-            'tokens' : list(authentication_service.BearerTokens.keys())
+            'tokens' : list(authentication_service.BearerTokens.keys()),
+            'id' : MYID
            }
 
 
